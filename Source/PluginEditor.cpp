@@ -23,9 +23,9 @@ NeedVSToWorkPlsAudioProcessorEditor::NeedVSToWorkPlsAudioProcessorEditor (NeedVS
     sliderObject.setRange(0, 100, 0);
     sliderObject.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
     sliderObject.setPopupDisplayEnabled(true, true, this);
-    sliderObject.setTextValueSuffix(" Minou Slider");
+    sliderObject.setTextValueSuffix("");
     sliderObject.setValue(0);
-
+    sliderObject.addListener(this);
     addAndMakeVisible(&sliderObject);
 }
 
@@ -49,4 +49,9 @@ void NeedVSToWorkPlsAudioProcessorEditor::resized()
     sliderObject.setBounds(40, 30, 20, getHeight() - 60);
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+}
+
+void NeedVSToWorkPlsAudioProcessorEditor::sliderValueChanged(juce::Slider* slid)
+{
+    audioProcessor.minouVolume = sliderObject.getValue();
 }

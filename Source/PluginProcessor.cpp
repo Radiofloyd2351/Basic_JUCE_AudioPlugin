@@ -153,11 +153,37 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    float container = 0;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
 
+
         // ..do something to the data...
+        for (int spl = 0; spl < buffer.getNumSamples(); spl++) {
+            std::vector<float> samplesDelayed;
+            if (samplesDelayed.size() < 44100) {
+                samplesDelayed.push_back(buffer.getSample(channel, spl));
+            }
+            else {
+                samplesDelayed.clear();
+            }
+            for (float splBuff : samplesDelayed) {
+                if (container != 0)
+                {
+                    channelData[spl] *= minouVolume;
+                    channelData[spl] += container;
+                    channelData[spl] *=  (minouVolume/100);
+                    container = channel;
+
+                }
+                else
+                {
+                    channelData[spl] *= minouVolume;
+                    container = channelData[spl];
+                }
+            }
+        }
     }
 }
 

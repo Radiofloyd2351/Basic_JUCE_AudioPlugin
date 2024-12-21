@@ -14,7 +14,8 @@
 //==============================================================================
 /**
 */
-class NeedVSToWorkPlsAudioProcessorEditor  : public juce::AudioProcessorEditor
+class NeedVSToWorkPlsAudioProcessorEditor  : public juce::AudioProcessorEditor, 
+    private juce::Slider::Listener
 {
 public:
     NeedVSToWorkPlsAudioProcessorEditor (NeedVSToWorkPlsAudioProcessor&);
@@ -25,6 +26,7 @@ public:
     void resized() override;
 
 private:
+    void sliderValueChanged(juce::Slider* slid) override;
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     NeedVSToWorkPlsAudioProcessor& audioProcessor;
