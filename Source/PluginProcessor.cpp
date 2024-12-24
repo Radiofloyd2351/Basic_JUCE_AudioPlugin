@@ -153,38 +153,31 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    delayBuffer.setSize(2, 15 * (buffer.getNumSamples()-1));
     float container = 0;
+    int delayPointer = 0;
+    int delayWritePointer = delayBuffer.getNumSamples()-1;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        auto* channelData = buffer.getWritePointer(channel);
 
+        for (int splPoint = 0; splPoint < buffer.getNumSamples(); splPoint++)
+        {
+            float delayedSample = delayBuffer.getSample(channel, delayPointer);
 
-        // ..do something to the data...
-        for (int spl = 0; spl < buffer.getNumSamples(); spl++) {
-            std::vector<float> samplesDelayed;
-            if (samplesDelayed.size() < 44100) {
-                samplesDelayed.push_back(buffer.getSample(channel, spl));
-            }
-            else {
-                samplesDelayed.clear();
-            }
-            for (float splBuff : samplesDelayed) {
-                if (container != 0)
-                {
-                    channelData[spl] *= minouVolume;
-                    channelData[spl] += container;
-                    channelData[spl] *=  (minouVolume/100);
-                    container = channel;
+            float drySample = channelData[splPoint];
+            float out = (1 - 0.5) * drySample + 0.5 * delayedSample;
 
-                }
-                else
-                {
-                    channelData[spl] *= minouVolume;
-                    container = channelData[spl];
-                }
-            }
+            channelData[splPoint] = out;
+
+            delayBuffer.setSample(channel, delayWritePointer, drySample);
+
+            delayPointer = (delayPointer + 1) % (delayBuffer.getNumSamples() - 1);
+            delayPointer = (delayWritePointer + 1) % (delayBuffer.getNumSamples() - 1);
+
         }
     }
+     
 }
 
 //==============================================================================

@@ -56,6 +56,7 @@ public:
     float minouVolume = 0;
 
 private:
+    juce::AudioBuffer<float> delayBuffer;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeedVSToWorkPlsAudioProcessor)
 };
