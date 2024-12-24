@@ -98,6 +98,7 @@ void NeedVSToWorkPlsAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    delayBuffer.setSize(getNumInputChannels(), static_cast<int>(sampleRate * 1));
 }
 
 void NeedVSToWorkPlsAudioProcessor::releaseResources()
@@ -144,6 +145,7 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
+
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
@@ -153,27 +155,30 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    delayBuffer.setSize(2, 15 * (buffer.getNumSamples()-1));
-    float container = 0;
+    int dlySize = delayBuffer.getNumSamples();
+    if (dlySize == 0) { return; }
+
     int delayPointer = 0;
     int delayWritePointer = delayBuffer.getNumSamples()-1;
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer(channel);
+        auto* delayData = delayBuffer.getWritePointer(channel);
 
-        for (int splPoint = 0; splPoint < buffer.getNumSamples(); splPoint++)
+        for (int spl = 0; spl < buffer.getNumSamples(); spl++)
         {
-            float delayedSample = delayBuffer.getSample(channel, delayPointer);
+            float delayedSample = delayData[delayPointer];
+            float drySample = channelData[spl];
 
-            float drySample = channelData[splPoint];
-            float out = (1 - 0.5) * drySample + 0.5 * delayedSample;
+            channelData[spl] = drySample + delayedSample;
 
-            channelData[splPoint] = out;
+            delayData[delayWritePointer] = drySample;
 
-            delayBuffer.setSample(channel, delayWritePointer, drySample);
+            delayPointer = (delayPointer + 1) % dlySize;
 
-            delayPointer = (delayPointer + 1) % (delayBuffer.getNumSamples() - 1);
-            delayPointer = (delayWritePointer + 1) % (delayBuffer.getNumSamples() - 1);
+            delayWritePointer = (delayWritePointer + 1) % dlySize;
+
 
         }
     }
