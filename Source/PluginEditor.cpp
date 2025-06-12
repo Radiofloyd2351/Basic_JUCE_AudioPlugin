@@ -12,21 +12,16 @@
 
 //==============================================================================
 
-NeedVSToWorkPlsAudioProcessorEditor::NeedVSToWorkPlsAudioProcessorEditor (NeedVSToWorkPlsAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+NeedVSToWorkPlsAudioProcessorEditor::NeedVSToWorkPlsAudioProcessorEditor(NeedVSToWorkPlsAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
+    : AudioProcessorEditor(&p), audioProcessor(p), apvts(apvts)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
 
-    sliderObject.setSliderStyle(juce::Slider::LinearBarVertical);
-    sliderObject.setRange(0, 100, 0);
-    sliderObject.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-    sliderObject.setPopupDisplayEnabled(true, true, this);
-    sliderObject.setTextValueSuffix("");
-    sliderObject.setValue(0);
-    sliderObject.addListener(this);
-    addAndMakeVisible(&sliderObject);
+    juce::Slider dwSlider;
+    juce::Slider fbSlider;
+    juce::Slider timeSlider;
 }
 
 NeedVSToWorkPlsAudioProcessorEditor::~NeedVSToWorkPlsAudioProcessorEditor()
@@ -46,12 +41,6 @@ void NeedVSToWorkPlsAudioProcessorEditor::paint (juce::Graphics& g)
 
 void NeedVSToWorkPlsAudioProcessorEditor::resized()
 {
-    sliderObject.setBounds(40, 30, 20, getHeight() - 60);
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-}
-
-void NeedVSToWorkPlsAudioProcessorEditor::sliderValueChanged(juce::Slider* slid)
-{
-    audioProcessor.minouVolume = sliderObject.getValue();
 }
