@@ -169,15 +169,13 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // interleaved by keeping the same state.
     float feedback = *params.getRawParameterValue("FB");
     float dryWet = *params.getRawParameterValue("DW");
-    if (dTime != *params.getRawParameterValue("TIME")) {
-        dTime = *params.getRawParameterValue("TIME");
-    }
-
+    float nextTime = *params.getRawParameterValue("TIME");
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         writeRingBuffer(channel, buffer);
+        if (dTime != nextTime) performTimeChange(channel, buffer, nextTime);
         auto buff = writeMainBuffer(channel, buffer);
-        writeFeedback(channel, buff, feedback);
+        writeRingBuffer(channel, buff, feedback);
         mixSignals(channel, buffer, dryWet);
     }
 
@@ -185,22 +183,13 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
      
 }
 
-void NeedVSToWorkPlsAudioProcessor::writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer)
+void NeedVSToWorkPlsAudioProcessor::writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain )
 {
     int bufferSpl = buffer.getNumSamples();
     int loopCopyNum = (dWritePtr + bufferSpl) > dSpl ? (dWritePtr + bufferSpl) % dSpl : 0;
     int forwardCopyNum = bufferSpl - loopCopyNum;
-    dBuffer.copyFrom(channel, dWritePtr, buffer.getWritePointer(channel), forwardCopyNum);
-    dBuffer.copyFrom(channel, 0, buffer.getWritePointer(channel) + forwardCopyNum, loopCopyNum);
-}
-
-void NeedVSToWorkPlsAudioProcessor::writeFeedback(int channel, juce::AudioBuffer<float>& buffer, float feedback)
-{
-    int bufferSpl = buffer.getNumSamples();
-    int loopCopyNum = (dWritePtr + bufferSpl) > dSpl ? (dWritePtr + bufferSpl) % dSpl : 0;
-    int forwardCopyNum = bufferSpl - loopCopyNum;
-    dBuffer.copyFrom(channel, dWritePtr, buffer.getWritePointer(channel), forwardCopyNum, feedback);
-    dBuffer.copyFrom(channel, 0, buffer.getWritePointer(channel) + forwardCopyNum, loopCopyNum, feedback);
+    dBuffer.copyFrom(channel, dWritePtr, buffer.getWritePointer(channel), forwardCopyNum, gain);
+    dBuffer.copyFrom(channel, 0, buffer.getWritePointer(channel) + forwardCopyNum, loopCopyNum, gain);
 }
 
 juce::AudioBuffer<float> NeedVSToWorkPlsAudioProcessor::writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer)
@@ -226,6 +215,14 @@ void NeedVSToWorkPlsAudioProcessor::mixSignals(int channel, juce::AudioBuffer<fl
     buffer.applyGain(channel, 0, bufferSpl, 1 - dryWet);
     buffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, dReadPtr), forwardCopyNum, dryWet);
     buffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum, dryWet);
+}
+
+void NeedVSToWorkPlsAudioProcessor::performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time) {
+    if (buffer.getRMSLevel(channel, 0, buffer.getNumSamples()) <= 0.01) {
+        dTime = time;
+        buffer.applyGainRamp(channel, 0, buffer.getNumSamples(), 0, 1);
+    }
+    buffer.applyGainRamp(channel, 0, buffer.getNumSamples(), 1, 0);
 }
 
 //==============================================================================

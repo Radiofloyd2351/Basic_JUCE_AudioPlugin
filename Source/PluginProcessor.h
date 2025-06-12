@@ -53,8 +53,6 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    float minouVolume = 0;
-
 private:
     juce::AudioProcessorValueTreeState params;
     float dTime;
@@ -62,11 +60,10 @@ private:
     int dWritePtr = 0;
     int dReadPtr = 0;
     juce::AudioBuffer<float> dBuffer;
-
-    void writeFeedback(int channel, juce::AudioBuffer<float>& buffer, float feedback);
-    void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer);
+    void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain = 1);
     juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer);
     void mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet);
+    void performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeedVSToWorkPlsAudioProcessor)
 };
