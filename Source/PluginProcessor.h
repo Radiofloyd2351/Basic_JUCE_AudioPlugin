@@ -56,6 +56,17 @@ public:
     float minouVolume = 0;
 
 private:
+    juce::AudioProcessorValueTreeState params;
+    float dTime;
+    int dSpl;
+    int dWritePtr = 0;
+    int dReadPtr = 0;
+    juce::AudioBuffer<float> dBuffer;
+
+    void writeFeedback(int channel, juce::AudioBuffer<float>& buffer, float feedback);
+    void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer);
+    juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer);
+    void mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeedVSToWorkPlsAudioProcessor)
 };

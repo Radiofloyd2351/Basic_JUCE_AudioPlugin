@@ -14,24 +14,30 @@
 //==============================================================================
 /**
 */
-class NeedVSToWorkPlsAudioProcessorEditor  : public juce::AudioProcessorEditor, 
-    private juce::Slider::Listener
+
+typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+
+class NeedVSToWorkPlsAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    NeedVSToWorkPlsAudioProcessorEditor (NeedVSToWorkPlsAudioProcessor&);
+    NeedVSToWorkPlsAudioProcessorEditor (NeedVSToWorkPlsAudioProcessor&, juce::AudioProcessorValueTreeState& apvts);
     ~NeedVSToWorkPlsAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-
+   
 private:
-    void sliderValueChanged(juce::Slider* slid) override;
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     NeedVSToWorkPlsAudioProcessor& audioProcessor;
-
-    juce::Slider sliderObject;
-
+    juce::AudioProcessorValueTreeState& apvts;
+    juce::Slider dwSlider;
+    std::unique_ptr<SliderAttachment> dwAttachment;
+    juce::Slider fbSlider;
+    std::unique_ptr<SliderAttachment> fbAttachment;
+    juce::Slider timeSlider;
+    std::unique_ptr<SliderAttachment> timeAttachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeedVSToWorkPlsAudioProcessorEditor)
 };

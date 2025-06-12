@@ -11,11 +11,16 @@
 
 //==============================================================================
 
+const int MAX_DELAY_TIME_SECONDS = 10;
 
 
-NeedVSToWorkPlsAudioProcessor::NeedVSToWorkPlsAudioProcessor()
+NeedVSToWorkPlsAudioProcessor::NeedVSToWorkPlsAudioProcessor() : params(*this, nullptr, juce::Identifier("Delay"), {
+    std::make_unique<juce::AudioParameterFloat>("DW", "Dry/Wet", 0, 1, 0.25),
+    std::make_unique<juce::AudioParameterFloat>("FB", "Feedback", 0, 1, 0.5),
+    std::make_unique <juce::AudioParameterInt>("TIME", "Time", 1, MAX_DELAY_TIME_SECONDS, 2)
+    }), AudioProcessor(BusesProperties()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
@@ -25,6 +30,11 @@ NeedVSToWorkPlsAudioProcessor::NeedVSToWorkPlsAudioProcessor()
                        )
 #endif
 {
+    dTime = *params.getRawParameterValue("TIME");
+    dBuffer = juce::AudioBuffer<float>();
+    dWritePtr = 0;
+    dReadPtr = 0;
+    dSpl = 0;
 }
 
 NeedVSToWorkPlsAudioProcessor::~NeedVSToWorkPlsAudioProcessor()
@@ -98,6 +108,9 @@ void NeedVSToWorkPlsAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    dSpl = static_cast<int>((MAX_DELAY_TIME_SECONDS + 1) * sampleRate);
+    dBuffer.setSize(getTotalNumInputChannels(), dSpl);
+    dBuffer.clear();
 }
 
 void NeedVSToWorkPlsAudioProcessor::releaseResources()
@@ -144,6 +157,7 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
+
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
@@ -153,38 +167,65 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    float container = 0;
+    float feedback = *params.getRawParameterValue("FB");
+    float dryWet = *params.getRawParameterValue("DW");
+    if (dTime != *params.getRawParameterValue("TIME")) {
+        dTime = *params.getRawParameterValue("TIME");
+    }
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-
-
-        // ..do something to the data...
-        for (int spl = 0; spl < buffer.getNumSamples(); spl++) {
-            std::vector<float> samplesDelayed;
-            if (samplesDelayed.size() < 44100) {
-                samplesDelayed.push_back(buffer.getSample(channel, spl));
-            }
-            else {
-                samplesDelayed.clear();
-            }
-            for (float splBuff : samplesDelayed) {
-                if (container != 0)
-                {
-                    channelData[spl] *= minouVolume;
-                    channelData[spl] += container;
-                    channelData[spl] *=  (minouVolume/100);
-                    container = channel;
-
-                }
-                else
-                {
-                    channelData[spl] *= minouVolume;
-                    container = channelData[spl];
-                }
-            }
-        }
+        writeRingBuffer(channel, buffer);
+        auto buff = writeMainBuffer(channel, buffer);
+        writeFeedback(channel, buff, feedback);
+        mixSignals(channel, buffer, dryWet);
     }
+
+    dWritePtr = (dWritePtr + buffer.getNumSamples()) % dSpl;
+     
+}
+
+void NeedVSToWorkPlsAudioProcessor::writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer)
+{
+    int bufferSpl = buffer.getNumSamples();
+    int loopCopyNum = (dWritePtr + bufferSpl) > dSpl ? (dWritePtr + bufferSpl) % dSpl : 0;
+    int forwardCopyNum = bufferSpl - loopCopyNum;
+    dBuffer.copyFrom(channel, dWritePtr, buffer.getWritePointer(channel), forwardCopyNum);
+    dBuffer.copyFrom(channel, 0, buffer.getWritePointer(channel) + forwardCopyNum, loopCopyNum);
+}
+
+void NeedVSToWorkPlsAudioProcessor::writeFeedback(int channel, juce::AudioBuffer<float>& buffer, float feedback)
+{
+    int bufferSpl = buffer.getNumSamples();
+    int loopCopyNum = (dWritePtr + bufferSpl) > dSpl ? (dWritePtr + bufferSpl) % dSpl : 0;
+    int forwardCopyNum = bufferSpl - loopCopyNum;
+    dBuffer.copyFrom(channel, dWritePtr, buffer.getWritePointer(channel), forwardCopyNum, feedback);
+    dBuffer.copyFrom(channel, 0, buffer.getWritePointer(channel) + forwardCopyNum, loopCopyNum, feedback);
+}
+
+juce::AudioBuffer<float> NeedVSToWorkPlsAudioProcessor::writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer)
+{
+    juce::AudioBuffer<float> newBuffer = juce::AudioBuffer<float>();
+    newBuffer.makeCopyOf(buffer);
+    int bufferSpl = newBuffer.getNumSamples();
+    int delaySamples = static_cast<int>(dTime * getSampleRate());
+    int proposedReadPtr = dWritePtr - delaySamples;
+    dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + dSpl;
+    int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
+    int forwardCopyNum = bufferSpl - loopCopyNum;
+    newBuffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, dReadPtr), forwardCopyNum);
+    newBuffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum);
+    return newBuffer;
+}
+
+void NeedVSToWorkPlsAudioProcessor::mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet)
+{
+    int bufferSpl = buffer.getNumSamples();
+    int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
+    int forwardCopyNum = bufferSpl - loopCopyNum;
+    buffer.applyGain(channel, 0, bufferSpl, 1 - dryWet);
+    buffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, dReadPtr), forwardCopyNum, dryWet);
+    buffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum, dryWet);
 }
 
 //==============================================================================
@@ -195,7 +236,7 @@ bool NeedVSToWorkPlsAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* NeedVSToWorkPlsAudioProcessor::createEditor()
 {
-    return new NeedVSToWorkPlsAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
