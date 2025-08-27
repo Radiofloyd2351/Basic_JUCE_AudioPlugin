@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "BasicSteppedDelayProcessor.h"
 
 //==============================================================================
 /**
@@ -55,15 +56,7 @@ public:
 
 private:
     juce::AudioProcessorValueTreeState params;
-    float dTime;
-    int dSpl;
-    int dWritePtr = 0;
-    int dReadPtr = 0;
-    juce::AudioBuffer<float> dBuffer;
-    void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain = 1);
-    juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer);
-    void mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet);
-    void performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time);
+    BasicSteppedDelayProcessor delay;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeedVSToWorkPlsAudioProcessor)
 };
