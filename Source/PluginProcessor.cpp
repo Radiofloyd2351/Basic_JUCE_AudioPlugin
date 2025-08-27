@@ -178,8 +178,9 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         auto buff = delay.writeMainBuffer(channel, buffer);
         delay.writeRingBuffer(channel, buff, feedback);
         delay.mixSignals(channel, buffer, dryWet);
-        if (IsClear) {
+        if (IsClear != lastClearState) {
             delay.dBuffer.clear();
+            lastClearState = IsClear;
         }
     }
 
