@@ -16,16 +16,15 @@ void BasicSteppedDelayProcessor::init(int channels, int sampleRate, int delaySam
 
 juce::AudioBuffer<float> BasicSteppedDelayProcessor::writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer)
 {
-    juce::AudioBuffer<float> newBuffer = juce::AudioBuffer<float>();
-    newBuffer.makeCopyOf(buffer);
-    int bufferSpl = newBuffer.getNumSamples();
+    tempBuffer.makeCopyOf(buffer);
+    int bufferSpl = tempBuffer.getNumSamples();
     int proposedReadPtr = dWritePtr - (dTime * internalSampleRate);
     dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + dSpl;
     int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
     int forwardCopyNum = bufferSpl - loopCopyNum;
-    newBuffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, dReadPtr), forwardCopyNum);
-    newBuffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum);
-    return newBuffer;
+    tempBuffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, dReadPtr), forwardCopyNum);
+    tempBuffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum);
+    return tempBuffer;
 }
 
 void BasicSteppedDelayProcessor::performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time)

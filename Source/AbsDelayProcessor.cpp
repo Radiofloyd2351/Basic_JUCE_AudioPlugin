@@ -1,6 +1,11 @@
 #include "AbsDelayProcessor.h"
 
-void AbsDelayProcessor::writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain) 
+AbsDelayProcessor::AbsDelayProcessor()
+{
+    tempBuffer = juce::AudioBuffer<float>();
+}
+
+void AbsDelayProcessor::writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain)
 {
     int bufferSpl = buffer.getNumSamples();
     int loopCopyNum = (dWritePtr + bufferSpl) > dSpl ? (dWritePtr + bufferSpl) % dSpl : 0;
