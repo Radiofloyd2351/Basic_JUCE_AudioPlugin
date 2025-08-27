@@ -180,7 +180,6 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         delay.mixSignals(channel, buffer, dryWet);
         if (IsClear) {
             delay.dBuffer.clear();
-            *params.
         }
     }
 
