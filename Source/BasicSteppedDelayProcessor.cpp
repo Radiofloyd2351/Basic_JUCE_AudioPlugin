@@ -7,24 +7,24 @@ BasicSteppedDelayProcessor::BasicSteppedDelayProcessor()
 
 void BasicSteppedDelayProcessor::init(int channels, int sampleRate, int delaySamples, int delayTime)
 {
-    internalSampleRate = sampleRate;
-    dSpl = delaySamples;
-    dBuffer.setSize(channels, dSpl);
+    _internalSampleRate = sampleRate;
+    _dSpl = delaySamples;
+    dBuffer.setSize(channels, _dSpl);
     dTime = delayTime;
     dBuffer.clear();
 }
 
 juce::AudioBuffer<float> BasicSteppedDelayProcessor::writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer)
 {
-    tempBuffer.makeCopyOf(buffer);
-    int bufferSpl = tempBuffer.getNumSamples();
-    int proposedReadPtr = dWritePtr - (dTime * internalSampleRate);
-    dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + dSpl;
-    int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
+    _tempBuffer.makeCopyOf(buffer);
+    int bufferSpl = _tempBuffer.getNumSamples();
+    int proposedReadPtr = _dWritePtr - (dTime * _internalSampleRate);
+    _dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + _dSpl;
+    int loopCopyNum = (_dReadPtr + bufferSpl) > _dSpl ? (_dReadPtr + bufferSpl) % _dSpl : 0;
     int forwardCopyNum = bufferSpl - loopCopyNum;
-    tempBuffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, dReadPtr), forwardCopyNum);
-    tempBuffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum);
-    return tempBuffer;
+    _tempBuffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, _dReadPtr), forwardCopyNum);
+    _tempBuffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum);
+    return _tempBuffer;
 }
 
 void BasicSteppedDelayProcessor::performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time)

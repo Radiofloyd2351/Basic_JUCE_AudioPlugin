@@ -4,11 +4,11 @@
 class AbsDelayProcessor
 {	
 protected:
-	int dSpl;
-	int dWritePtr = 0;
-	int dReadPtr = 0;
-	int internalSampleRate;
-	juce::AudioBuffer<float> tempBuffer;
+	int _dSpl;
+	int _dWritePtr = 0;
+	int _dReadPtr = 0;
+	int _internalSampleRate;
+	juce::AudioBuffer<float> _tempBuffer;
 public:
 	int dTime = 0;
 	virtual void init(int channels, int sampleRate, int delaySamples, int delayTimeSamples) = 0;
@@ -17,6 +17,7 @@ public:
 	void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain = 1);
 	virtual juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer) = 0;
 	void mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet) const;
-	void incrementWritePointer(int samples);
+	virtual void performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time) = 0;
+	virtual void incrementWritePointer(int samples);
 };
 

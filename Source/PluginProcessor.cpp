@@ -167,10 +167,13 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+
+    // Setting up the values that change at runtime
     float feedback = *params.getRawParameterValue("FB");
     float dryWet = *params.getRawParameterValue("DW");
     float nextTime = *params.getRawParameterValue("TIME");
     bool IsClear = *params.getRawParameterValue("CLEAR");
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         delay.writeRingBuffer(channel, buffer, 1);
@@ -183,9 +186,7 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
             lastClearState = IsClear;
         }
     }
-
     delay.incrementWritePointer(buffer.getNumSamples());
-     
 }
 
 //==============================================================================
@@ -198,7 +199,6 @@ juce::AudioProcessorEditor* NeedVSToWorkPlsAudioProcessor::createEditor()
 {
     return new juce::GenericAudioProcessorEditor(*this);
 }
-
 //==============================================================================
 void NeedVSToWorkPlsAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
