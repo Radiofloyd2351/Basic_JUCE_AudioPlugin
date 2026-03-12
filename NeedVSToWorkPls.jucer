@@ -20,6 +20,8 @@
     <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
             useGlobalPath="1"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors_headless" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -48,6 +50,7 @@
         <MODULEPATH id="juce_graphics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="D:/DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
       </MODULEPATHS>
     </VS2019>
     <VS2022 targetFolder="Builds/VisualStudio2022">
@@ -68,6 +71,7 @@
         <MODULEPATH id="juce_graphics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="D:/DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>
