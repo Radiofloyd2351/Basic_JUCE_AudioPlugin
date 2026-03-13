@@ -14,7 +14,7 @@ public:
 	virtual void init(int channels, int sampleRate, int delaySamples, int delayTimeSamples) = 0;
 	juce::AudioBuffer<float> dBuffer;
 	AbsDelayProcessor();
-	void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain = 1);
+	virtual void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain = 1);
 	virtual juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer) = 0;
 	void mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet) const;
 	virtual void performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time) = 0;

@@ -9,8 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "BasicSteppedDelayProcessor.h"
-#include "ReverseSteppedDelayProcessor.h"
+#include "Delay/BasicSteppedDelayProcessor.h"
+#include "Delay/ReverseSteppedDelayProcessor.h"
 
 //==============================================================================
 /**
