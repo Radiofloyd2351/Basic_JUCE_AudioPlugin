@@ -58,7 +58,7 @@ public:
 private:
     juce::AudioProcessorValueTreeState params;
     bool lastClearState = false;
-    ReverseSteppedDelayProcessor delay;
+    BasicSteppedDelayProcessor delay;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeedVSToWorkPlsAudioProcessor)
 };

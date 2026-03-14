@@ -11,7 +11,7 @@
 
 //==============================================================================
 
-const int MAX_DELAY_TIME_SECONDS = 10;
+const int MAX_DELAY_TIME_SECONDS = 60;
 
 
 NeedVSToWorkPlsAudioProcessor::NeedVSToWorkPlsAudioProcessor() : params(*this, nullptr, juce::Identifier("Delay"), {
