@@ -12,7 +12,7 @@ protected:
 public:
 	int dTime = 0;
 	virtual void init(int channels, int sampleRate, int delaySamples, int delayTimeSamples) = 0;
-	juce::AudioBuffer<float> dBuffer;
+	static juce::AudioBuffer<float> dBuffer;
 	AbsDelayProcessor();
 	virtual void writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain = 1);
 	virtual juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer) = 0;

@@ -1,5 +1,7 @@
 #include "AbsDelayProcessor.h"
 
+juce::AudioBuffer<float> AbsDelayProcessor::dBuffer;
+
 AbsDelayProcessor::AbsDelayProcessor()
 {
     _tempBuffer = juce::AudioBuffer<float>();
