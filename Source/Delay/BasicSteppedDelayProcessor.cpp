@@ -1,6 +1,6 @@
 #include "BasicSteppedDelayProcessor.h"
 
-const int CROSSFADE_DURATION_MS = 50;
+const int CROSSFADE_DURATION_MS = 200;
 
 BasicSteppedDelayProcessor::BasicSteppedDelayProcessor()
 {
@@ -10,14 +10,15 @@ BasicSteppedDelayProcessor::BasicSteppedDelayProcessor()
 void BasicSteppedDelayProcessor::init(int channels, int sampleRate, int delaySamples, int delayTime)
 {
     _internalSampleRate = sampleRate;
-    _dSpl = delaySamples;
-    dBuffer.setSize(channels, _dSpl);
+    dSpl = delaySamples;
+    dBuffer.setSize(channels, dSpl);
     dTime = delayTime;
     _crossfadeSpl = 0;
     _crossfadeState = 0;
     _isCrossfading = false;
     _oldTime = 0;
     dBuffer.clear();
+    dReadPtr = dBuffer.getNumSamples() - 1;
 
 }
 
@@ -35,17 +36,17 @@ juce::AudioBuffer<float> BasicSteppedDelayProcessor::writeMainBuffer(int channel
 
         // Process old delay time with oldGain
         double blendedDelayTimeOld = _oldTime;
-        int proposedReadPtrOld = _dWritePtr - (blendedDelayTimeOld * _internalSampleRate);
-        int dReadPtrOld = (proposedReadPtrOld >= 0) ? proposedReadPtrOld : proposedReadPtrOld + _dSpl;
+        int proposedReadPtrOld = dWritePtr - (blendedDelayTimeOld * _internalSampleRate);
+        int dReadPtrOld = (proposedReadPtrOld >= 0) ? proposedReadPtrOld : proposedReadPtrOld + dSpl;
 
         // Process new delay time with newGain
         double blendedDelayTimeNew = dTime;
-        int proposedReadPtrNew = _dWritePtr - (blendedDelayTimeNew * _internalSampleRate);
-        int dReadPtrNew = (proposedReadPtrNew >= 0) ? proposedReadPtrNew : proposedReadPtrNew + _dSpl;
+        int proposedReadPtrNew = dWritePtr - (blendedDelayTimeNew * _internalSampleRate);
+        int dReadPtrNew = (proposedReadPtrNew >= 0) ? proposedReadPtrNew : proposedReadPtrNew + dSpl;
 
         for (int i = 0; i < _tempBuffer.getNumSamples(); i++) {
-            float splOld = *dBuffer.getReadPointer(channel, (dReadPtrOld + i) % _dSpl);
-            float splNew = *dBuffer.getReadPointer(channel, (dReadPtrNew + i) % _dSpl);
+            float splOld = *dBuffer.getReadPointer(channel, (dReadPtrOld + i) % dSpl);
+            float splNew = *dBuffer.getReadPointer(channel, (dReadPtrNew + i) % dSpl);
 
             *_tempBuffer.getWritePointer(channel, i) += splOld * oldGain + splNew * newGain;
         }
@@ -57,10 +58,10 @@ juce::AudioBuffer<float> BasicSteppedDelayProcessor::writeMainBuffer(int channel
         return _tempBuffer;
     }
 
-    int proposedReadPtr = _dWritePtr - (dTime * _internalSampleRate);
-    _dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + _dSpl;
+    int proposedReadPtr = dWritePtr - (dTime * _internalSampleRate);
+    dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + dSpl;
     for (int i = 0; i < _tempBuffer.getNumSamples(); i++) {
-        float spl = *dBuffer.getReadPointer(channel, (_dReadPtr + i) % _dSpl);
+        float spl = *dBuffer.getReadPointer(channel, (dReadPtr + i) % dSpl);
         *_tempBuffer.getWritePointer(channel, i) += spl;
     }
     return _tempBuffer;

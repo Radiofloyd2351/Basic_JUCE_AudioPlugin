@@ -11,12 +11,12 @@
 
 //==============================================================================
 
-const int MAX_DELAY_TIME_SECONDS = 60;
+const int MAX_DELAY_TIME_SECONDS = 4;
 
 
 NeedVSToWorkPlsAudioProcessor::NeedVSToWorkPlsAudioProcessor() : params(*this, nullptr, juce::Identifier("Delay"), {
     std::make_unique<juce::AudioParameterFloat>("DW", "Dry/Wet", 0, 1, 0.25),
-    std::make_unique<juce::AudioParameterFloat>("FB", "Feedback", 0, 1, 0.5),
+    std::make_unique<juce::AudioParameterFloat>("FB", "Feedback", 0, 1, 0),
     std::make_unique <juce::AudioParameterInt>("TIME", "Time", 1, MAX_DELAY_TIME_SECONDS, 2),
     std::make_unique<juce::AudioParameterBool>("CLEAR", "Clear", false)
     }), AudioProcessor(BusesProperties()
@@ -197,7 +197,7 @@ bool NeedVSToWorkPlsAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* NeedVSToWorkPlsAudioProcessor::createEditor()
 {
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new NeedVSToWorkPlsAudioProcessorEditor(*this, params);
 }
 //==============================================================================
 void NeedVSToWorkPlsAudioProcessor::getStateInformation (juce::MemoryBlock& destData)

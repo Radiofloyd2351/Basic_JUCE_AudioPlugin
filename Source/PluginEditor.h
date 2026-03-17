@@ -18,7 +18,7 @@
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
-class NeedVSToWorkPlsAudioProcessorEditor  : public juce::AudioProcessorEditor
+class NeedVSToWorkPlsAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
     NeedVSToWorkPlsAudioProcessorEditor (NeedVSToWorkPlsAudioProcessor&, juce::AudioProcessorValueTreeState& apvts);
@@ -26,7 +26,9 @@ public:
 
     //==============================================================================
     void paint (juce::Graphics&) override;
+    void drawBuffer(juce::Graphics& g);
     void resized() override;
+    void timerCallback() override;
    
 private:
     // This reference is provided as a quick way for your editor to

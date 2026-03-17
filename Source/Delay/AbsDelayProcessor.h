@@ -4,12 +4,12 @@
 class AbsDelayProcessor
 {	
 protected:
-	int _dSpl;
-	int _dWritePtr = 0;
-	int _dReadPtr = 0;
 	int _internalSampleRate;
 	juce::AudioBuffer<float> _tempBuffer;
 public:
+	int dSpl;
+	int dWritePtr = 0;
+	int dReadPtr = 0;
 	int dTime = 0;
 	virtual void init(int channels, int sampleRate, int delaySamples, int delayTimeSamples) = 0;
 	static juce::AudioBuffer<float> dBuffer;
