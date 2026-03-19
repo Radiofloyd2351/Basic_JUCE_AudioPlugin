@@ -11,14 +11,15 @@
 
 //==============================================================================
 
-const int MAX_DELAY_TIME_SECONDS = 4;
+const int MAX_DELAY_TIME_SECONDS = 5;
 
 
 NeedVSToWorkPlsAudioProcessor::NeedVSToWorkPlsAudioProcessor() : params(*this, nullptr, juce::Identifier("Delay"), {
     std::make_unique<juce::AudioParameterFloat>("DW", "Dry/Wet", 0, 1, 0.25),
     std::make_unique<juce::AudioParameterFloat>("FB", "Feedback", 0, 1, 0),
     std::make_unique <juce::AudioParameterInt>("TIME", "Time", 1, MAX_DELAY_TIME_SECONDS, 2),
-    std::make_unique<juce::AudioParameterBool>("CLEAR", "Clear", false)
+    std::make_unique<juce::AudioParameterBool>("CLEAR", "Clear", false),
+	std::make_unique<juce::AudioParameterBool>("REVERSE", "Reverse", false)
     }), AudioProcessor(BusesProperties()
 #ifndef JucePlugin_PreferredChannelConfigurations
 
@@ -172,7 +173,8 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     float feedback = *params.getRawParameterValue("FB");
     float dryWet = *params.getRawParameterValue("DW");
     float nextTime = *params.getRawParameterValue("TIME");
-    bool IsClear = *params.getRawParameterValue("CLEAR");
+    bool isClear = *params.getRawParameterValue("CLEAR");
+	bool isReverse = *params.getRawParameterValue("REVERSE");
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
@@ -181,10 +183,14 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         auto buff = delay.writeMainBuffer(channel, buffer);
         delay.writeRingBuffer(channel, buff, feedback);
         delay.mixSignals(channel, buffer, dryWet);
-        if (IsClear != lastClearState) {
+        if (isClear != lastClearState) {
             delay.dBuffer.clear();
-            lastClearState = IsClear;
+            lastClearState = isClear;
         }
+		if (isReverse != lastReverseState) {
+			delay.dBuffer.reverse(channel, delay.dSpl);
+			lastReverseState = isReverse;
+		}
     }
     delay.incrementWritePointer(buffer.getNumSamples());
 }

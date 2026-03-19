@@ -3,31 +3,29 @@
 void ReverseSteppedDelayProcessor::init(int channels, int sampleRate, int delaySamples, int delayTime)
 {
     _internalSampleRate = sampleRate;
-    _dSpl = delaySamples;
-    dBuffer.setSize(channels, _dSpl);
+    dSpl = delaySamples;
+    dBuffer.setSize(channels, dSpl);
     dTime = delayTime;
     dBuffer.clear();
-    delayPtr = 0;
+	dReadPtr = dSpl;
     accumulatedDelay = 0;
 }
 
-
 juce::AudioBuffer<float> ReverseSteppedDelayProcessor::writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer)
 {
-    _tempBuffer.makeCopyOf(buffer);
-    int bufferSpl = _tempBuffer.getNumSamples();
-    int proposedReadPtr = _dWritePtr - (dTime * _internalSampleRate);
-    _dReadPtr = (proposedReadPtr >= 0) ? proposedReadPtr : proposedReadPtr + _dSpl;
-    if (accumulatedDelay >= dTime * _internalSampleRate) {
-        reverseBuffer(channel, dTime * _internalSampleRate);
-        accumulatedDelay = 0;
-    }
-    int loopCopyNum = (_dReadPtr + bufferSpl) > _dSpl ? (_dReadPtr + bufferSpl) % _dSpl : 0;
-    int forwardCopyNum = bufferSpl - loopCopyNum;
-    _tempBuffer.addFrom(channel, 0, dBuffer.getReadPointer(channel, _dReadPtr), forwardCopyNum);
-    _tempBuffer.addFrom(channel, forwardCopyNum, dBuffer.getReadPointer(channel, 0), loopCopyNum);
-    return _tempBuffer;
+	_tempBuffer.makeCopyOf(buffer);
+	for (int i = 0; i < _tempBuffer.getNumSamples(); i++) {
+		int proposedReadPtr = dReadPtr - i - 1 >= 0 ? dReadPtr - i - 1 : dReadPtr - i - 1 + dSpl;
+		float spl = *dBuffer.getReadPointer(channel, proposedReadPtr);
+		*_tempBuffer.getWritePointer(channel, i) += spl;
+	}
+	if (channel == 0) {
+		accumulatedDelay += buffer.getNumSamples();
+	}
+	
+	return _tempBuffer;
 }
+
 
 void ReverseSteppedDelayProcessor::performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time)
 {
@@ -40,22 +38,27 @@ void ReverseSteppedDelayProcessor::performTimeChange(int channel, juce::AudioBuf
 
 void ReverseSteppedDelayProcessor::incrementWritePointer(int samples)
 {
-    _dWritePtr = (_dWritePtr + samples) % _dSpl;
-    accumulatedDelay += samples;
+    dWritePtr = (dWritePtr + samples) % dSpl;
+	dReadPtr = (dReadPtr - samples + dSpl) % dSpl;
+	if (accumulatedDelay >= dTime * _internalSampleRate) {
+		dReadPtr = dWritePtr;
+		accumulatedDelay = 0;
+	}
 }
 
-void ReverseSteppedDelayProcessor::reverseBuffer(int channel, int delaySamples)
-{
-    if (_dReadPtr + delaySamples <= _dSpl) {
-        dBuffer.reverse(channel, _dReadPtr, delaySamples);
-    }
-    else {
-        int forwardCopyNum = _dSpl - _dReadPtr;
-        int loopCopyNum = delaySamples - forwardCopyNum;
-        dBuffer.reverse(channel, _dReadPtr, forwardCopyNum);
-        dBuffer.reverse(channel, 0, loopCopyNum);
-    }
+void ReverseSteppedDelayProcessor::mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet) const {
+	int bufferSpl = buffer.getNumSamples();
+	int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
+	int forwardCopyNum = bufferSpl - loopCopyNum;
+	buffer.applyGain(channel, 0, bufferSpl, 1 - dryWet);
+	for (int i = 0; i < buffer.getNumSamples(); i++) {
+		float spl = *dBuffer.getReadPointer(channel, (dReadPtr - i + dSpl) % dSpl);
+		*buffer.getWritePointer(channel, i) += spl * dryWet;
+	}
 }
+
+
+
 
 
 

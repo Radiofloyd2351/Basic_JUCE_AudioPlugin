@@ -50,7 +50,7 @@
         <MODULEPATH id="juce_graphics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors_headless" path="D:/DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
       </MODULEPATHS>
     </VS2019>
     <VS2022 targetFolder="Builds/VisualStudio2022">
@@ -71,7 +71,7 @@
         <MODULEPATH id="juce_graphics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors_headless" path="D:/DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../DOWNLOAD/juce-8.0.4-windows/JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>
