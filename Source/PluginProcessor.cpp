@@ -176,17 +176,18 @@ void NeedVSToWorkPlsAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     bool isClear = *params.getRawParameterValue("CLEAR");
 	bool isReverse = *params.getRawParameterValue("REVERSE");
 
+	delay.writeRingBuffer(buffer, 1);
+	if (delay.dTime != nextTime) delay.performTimeChange(buffer, nextTime);
+	auto buff = delay.writeMainBuffer(buffer);
+	delay.writeRingBuffer(buff, feedback);
+	delay.mixSignals(buffer, dryWet);
+	if (isClear != lastClearState) {
+		delay.dBuffer.clear();
+		lastClearState = isClear;
+	}
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        delay.writeRingBuffer(channel, buffer, 1);
-        if (delay.dTime != nextTime) delay.performTimeChange(channel, buffer, nextTime);
-        auto buff = delay.writeMainBuffer(channel, buffer);
-        delay.writeRingBuffer(channel, buff, feedback);
-        delay.mixSignals(channel, buffer, dryWet);
-        if (isClear != lastClearState) {
-            delay.dBuffer.clear();
-            lastClearState = isClear;
-        }
 		if (isReverse != lastReverseState) {
 			delay.dBuffer.reverse(channel, delay.dSpl);
 			lastReverseState = isReverse;

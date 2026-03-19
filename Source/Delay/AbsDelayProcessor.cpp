@@ -12,28 +12,33 @@ AbsDelayProcessor::AbsDelayProcessor()
 }
 
 
-void AbsDelayProcessor::writeRingBuffer(int channel, juce::AudioBuffer<float>& buffer, float gain)
+void AbsDelayProcessor::writeRingBuffer(juce::AudioBuffer<float>& buffer, float gain)
 {
-	int size = dBuffer.getNumSamples();
-	for (int i = 0; i < buffer.getNumSamples(); i++) {
-		float spl = *buffer.getReadPointer(channel, i);
-		if (gain < 1)
-			*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) += spl * gain;
-		else
-			*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) = spl;
+
+		int size = dBuffer.getNumSamples();
+		for (int i = 0; i < buffer.getNumSamples(); i++) {
+			for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
+			float spl = *buffer.getReadPointer(channel, i);
+			if (gain < 1)
+				*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) += spl * gain;
+			else
+				*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) = spl;
+		}
 	}
 }
 
-void AbsDelayProcessor::mixSignals(int channel, juce::AudioBuffer<float>& buffer, float dryWet) const
+void AbsDelayProcessor::mixSignals(juce::AudioBuffer<float>& buffer, float dryWet) const
 {
-    int bufferSpl = buffer.getNumSamples();
-    int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
-    int forwardCopyNum = bufferSpl - loopCopyNum;
-    buffer.applyGain(channel, 0, bufferSpl, 1 - dryWet);
-    for (int i = 0; i < buffer.getNumSamples(); i++) {
-        float spl = *dBuffer.getReadPointer(channel, (dReadPtr - i + dSpl) % dSpl);
-        *buffer.getWritePointer(channel, i) += spl * dryWet;
-    }
+	for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
+		int bufferSpl = buffer.getNumSamples();
+		int loopCopyNum = (dReadPtr + bufferSpl) > dSpl ? (dReadPtr + bufferSpl) % dSpl : 0;
+		int forwardCopyNum = bufferSpl - loopCopyNum;
+		buffer.applyGain(channel, 0, bufferSpl, 1 - dryWet);
+		for (int i = 0; i < buffer.getNumSamples(); i++) {
+			float spl = *dBuffer.getReadPointer(channel, (dReadPtr - i + dSpl) % dSpl);
+			*buffer.getWritePointer(channel, i) += spl * dryWet;
+		}
+	}
 }
 
 void AbsDelayProcessor::incrementWritePointer(int samples)

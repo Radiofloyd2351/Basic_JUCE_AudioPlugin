@@ -5,11 +5,13 @@ class BasicSteppedDelayProcessor : public AbsDelayProcessor
 public:
 	BasicSteppedDelayProcessor();
 	void init(int channels, int sampleRate, int delaySamples, int delayTimeSamples) override;
-	juce::AudioBuffer<float> writeMainBuffer(int channel, juce::AudioBuffer<float>& buffer) override;
-	void performTimeChange(int channel, juce::AudioBuffer<float>& buffer, int time) override;
-private:
-	bool _isCrossfading = false;
-	int _crossfadeSpl = 0;
-	double _crossfadeState = 0.0;
-	int	_oldTime = 0;
+	juce::AudioBuffer<float> writeMainBuffer(juce::AudioBuffer<float>& buffer) override;
+	void performTimeChange(juce::AudioBuffer<float>& buffer, int time) override;
+protected:
+	float getCrossfadedSample(int splOld, int splNew);
+	float getSampleForTime(double blendedTime, int channel, int i);
+	bool isCrossfading = false;
+	int crossfadeSpl = 0;
+	double crossfadeState = 0.0;
+	int	oldTime = 0;
 };
