@@ -72,6 +72,3 @@ CMakeUserPresets.json
 
 **/Builds/VisualStudio2019
 
-*.sln
-
-*.rc
