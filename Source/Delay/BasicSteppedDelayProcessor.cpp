@@ -1,6 +1,6 @@
 #include "BasicSteppedDelayProcessor.h"
 
-const int CROSSFADE_DURATION_MS = 200;
+const int CROSSFADE_DURATION_MS = 1000;
 
 BasicSteppedDelayProcessor::BasicSteppedDelayProcessor()
 {
@@ -28,9 +28,9 @@ constant.
 @param splOld: The sample being crossfaded from.
 @param splNew: The sample being crossfaded to.
 */
-float BasicSteppedDelayProcessor::getCrossfadedSample(int splOld, int splNew)
+float BasicSteppedDelayProcessor::getCrossfadedSample(float splOld, float splNew)
 {
-	double crossTimeSpl = CROSSFADE_DURATION_MS / 1000.0 * _internalSampleRate;
+	double crossTimeSpl = CROSSFADE_DURATION_MS / 1000.0 * _internalSampleRate * 2;
 	crossfadeState = static_cast<double>(crossfadeSpl) / crossTimeSpl;
 	crossfadeState = juce::jlimit(0.0, 1.0, crossfadeState);
 
@@ -39,9 +39,11 @@ float BasicSteppedDelayProcessor::getCrossfadedSample(int splOld, int splNew)
 	float newGain = static_cast<float>(crossfadeState);
 	crossfadeSpl++;
 	if (crossfadeSpl > crossTimeSpl) {
+		DBG("disabling crossfade " << "time " << crossTimeSpl << "spl " << crossfadeSpl);
 		isCrossfading = false;
 		newGain = 1;
 		oldGain = 0;
+		crossfadeSpl = 0;
 	}
 	return splOld * oldGain + splNew * newGain;
 }

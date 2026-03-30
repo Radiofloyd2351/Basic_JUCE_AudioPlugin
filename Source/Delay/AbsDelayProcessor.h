@@ -8,6 +8,7 @@ protected:
 	juce::AudioBuffer<float> _tempBuffer;
 	float linearInterpolation(float v1, float v2, float fraction);
 	float cubicHermiteInterpolation(float A, float B, float C, float D, float t);
+	bool isReverse = false;
 public:
 	static int DBG_ITER;
 	int dSpl;
@@ -17,7 +18,8 @@ public:
 	virtual void init(int channels, int sampleRate, int delaySamples, int delayTimeSamples) = 0;
 	static juce::AudioBuffer<float> dBuffer;
 	AbsDelayProcessor();
-	virtual void writeRingBuffer(juce::AudioBuffer<float>& buffer, float gain = 1);
+	void writeRingBuffer(juce::AudioBuffer<float>& buffer, float gain = 1);
+	virtual void writeFeedback(juce::AudioBuffer<float>& buffer, float gain = 1);
 	virtual juce::AudioBuffer<float> writeMainBuffer(juce::AudioBuffer<float>& buffer) = 0;
 	virtual void mixSignals(juce::AudioBuffer<float>& buffer, float dryWet) const;
 	virtual void performTimeChange(juce::AudioBuffer<float>& buffer, int time) = 0;

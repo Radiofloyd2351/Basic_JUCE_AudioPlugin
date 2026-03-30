@@ -18,13 +18,25 @@ void AbsDelayProcessor::writeRingBuffer(juce::AudioBuffer<float>& buffer, float 
 		int size = dBuffer.getNumSamples();
 		for (int i = 0; i < buffer.getNumSamples(); i++) {
 			for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
-			float spl = *buffer.getReadPointer(channel, i);
+				float spl;
+				if (isReverse) {
+					spl = *buffer.getReadPointer(channel, buffer.getNumSamples() - 1 - i);
+				}
+				else {
+					spl = *buffer.getReadPointer(channel, i);
+				}
 			if (gain < 1)
 				*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) += spl * gain;
 			else
 				*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) = spl;
 		}
 	}
+}
+
+void AbsDelayProcessor::writeFeedback(juce::AudioBuffer<float>& buffer, float gain)
+{
+	auto buff = writeMainBuffer(buffer);
+	writeRingBuffer(buff, gain);
 }
 
 void AbsDelayProcessor::mixSignals(juce::AudioBuffer<float>& buffer, float dryWet) const

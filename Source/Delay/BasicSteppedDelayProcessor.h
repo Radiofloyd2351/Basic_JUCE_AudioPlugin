@@ -8,9 +8,10 @@ public:
 	juce::AudioBuffer<float> writeMainBuffer(juce::AudioBuffer<float>& buffer) override;
 	void performTimeChange(juce::AudioBuffer<float>& buffer, int time) override;
 protected:
-	float getCrossfadedSample(int splOld, int splNew);
+	float getCrossfadedSample(float splOld, float splNew);
 	float getSampleForTime(double blendedTime, int channel, int i);
 	bool isCrossfading = false;
+	int accumulatedDelay = 0;
 	int crossfadeSpl = 0;
 	double crossfadeState = 0.0;
 	int	oldTime = 0;
