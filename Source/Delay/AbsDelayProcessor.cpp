@@ -41,7 +41,7 @@ void AbsDelayProcessor::mixSignals(juce::AudioBuffer<float>& buffer, float dryWe
 		int forwardCopyNum = bufferSpl - loopCopyNum;
 		buffer.applyGain(channel, 0, bufferSpl, 1 - dryWet);
 		for (int i = 0; i < buffer.getNumSamples(); i++) {
-			float spl = *dBuffer.getReadPointer(channel, (dReadPtr - i + dSpl) % dSpl);
+			float spl = *dBuffer.getReadPointer(channel, (dReadPtr + i) % dSpl);
 			*buffer.getWritePointer(channel, i) += spl * dryWet;
 		}
 	}

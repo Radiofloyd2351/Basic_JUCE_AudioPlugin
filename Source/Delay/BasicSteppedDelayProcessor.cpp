@@ -1,6 +1,6 @@
 #include "BasicSteppedDelayProcessor.h"
 
-const int CROSSFADE_DURATION_MS = 1000;
+const int CROSSFADE_DURATION_MS = 128;
 
 BasicSteppedDelayProcessor::BasicSteppedDelayProcessor()
 {
@@ -18,8 +18,7 @@ void BasicSteppedDelayProcessor::init(int channels, int sampleRate, int delaySam
     isCrossfading = false;
     oldTime = 0;
     dBuffer.clear();
-    dReadPtr = dBuffer.getNumSamples() - 1;
-
+	dReadPtr = dBuffer.getNumSamples() - 1;
 }
 
 /**
