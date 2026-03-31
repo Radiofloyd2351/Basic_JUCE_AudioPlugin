@@ -59,13 +59,14 @@ juce::AudioBuffer<float> ReverseSteppedDelayProcessor::writeMainBuffer(juce::Aud
 {
 	float spl;
 	handleSecondPlayhead();
-	for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
-		_tempBuffer.makeCopyOf(buffer);
-		for (int i = 0; i < _tempBuffer.getNumSamples(); i++) {
+	
+	_tempBuffer.makeCopyOf(buffer);
+	for (int i = 0; i < _tempBuffer.getNumSamples(); i++) {
+		for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
 			int proposedReadPtr = dReadPtr - i - 1 >= 0 ? dReadPtr - i - 1 : dReadPtr - i - 1 + dSpl;
 			if (isCrossfading) {
 				int readOld = (dReadPtr - i - 1 + dSpl) % dSpl;
-				int readNew = (_secondPlayhead  - i - 1 + dSpl) % dSpl;
+				int readNew = (_secondPlayhead - i - 1 + dSpl) % dSpl;
 
 				float splOld = *dBuffer.getReadPointer(channel, readOld);
 				float splNew = *dBuffer.getReadPointer(channel, readNew);
@@ -77,6 +78,8 @@ juce::AudioBuffer<float> ReverseSteppedDelayProcessor::writeMainBuffer(juce::Aud
 			}
 			*_tempBuffer.getWritePointer(channel, i) += spl;
 		}
+		if (isCrossfading) crossfadeSpl++;
+		isCrossfading = checkCrossfadeState();
 	}
 	accumulatedDelay += buffer.getNumSamples();
 	return _tempBuffer;

@@ -56,7 +56,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    ReverseSteppedDelayProcessor delay;
+    BasicSteppedDelayProcessor delay;
 
 private:
     juce::AudioProcessorValueTreeState params;

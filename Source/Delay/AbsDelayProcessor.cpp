@@ -15,16 +15,10 @@ AbsDelayProcessor::AbsDelayProcessor()
 void AbsDelayProcessor::writeRingBuffer(juce::AudioBuffer<float>& buffer, float gain)
 {
 
-		int size = dBuffer.getNumSamples();
-		for (int i = 0; i < buffer.getNumSamples(); i++) {
-			for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
-				float spl;
-				if (isReverse) {
-					spl = *buffer.getReadPointer(channel, buffer.getNumSamples() - 1 - i);
-				}
-				else {
-					spl = *buffer.getReadPointer(channel, i);
-				}
+	int size = dBuffer.getNumSamples();
+	for (int i = 0; i < buffer.getNumSamples(); i++) {
+		for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
+			float spl = *buffer.getReadPointer(channel, i);
 			if (gain < 1)
 				*dBuffer.getWritePointer(channel, (dWritePtr + i) % size) += spl * gain;
 			else

@@ -30,22 +30,21 @@ constant.
 */
 float BasicSteppedDelayProcessor::getCrossfadedSample(float splOld, float splNew)
 {
-	double crossTimeSpl = CROSSFADE_DURATION_MS / 1000.0 * _internalSampleRate * 2;
-	crossfadeState = static_cast<double>(crossfadeSpl) / crossTimeSpl;
-	crossfadeState = juce::jlimit(0.0, 1.0, crossfadeState);
+	double crossTimeSpl = CROSSFADE_DURATION_MS / 1000.0 * _internalSampleRate;
 
-	// Calculate gain factors for old and new delay times
-	float oldGain = 1.0f - static_cast<float>(crossfadeState);
-	float newGain = static_cast<float>(crossfadeState);
-	crossfadeSpl++;
-	if (crossfadeSpl > crossTimeSpl) {
-		DBG("disabling crossfade " << "time " << crossTimeSpl << "spl " << crossfadeSpl);
-		isCrossfading = false;
-		newGain = 1;
-		oldGain = 0;
-		crossfadeSpl = 0;
-	}
+	double t = static_cast<double>(crossfadeSpl) / crossTimeSpl;
+	t = juce::jlimit(0.0, 1.0, t);
+
+	float oldGain = 1.0f - static_cast<float>(t);
+	float newGain = static_cast<float>(t);
+
 	return splOld * oldGain + splNew * newGain;
+}
+
+bool BasicSteppedDelayProcessor::checkCrossfadeState()
+{
+	double crossTimeSpl = CROSSFADE_DURATION_MS / 1000.0 * _internalSampleRate;
+	return crossfadeSpl < crossTimeSpl;
 }
 
 /**
@@ -80,6 +79,8 @@ juce::AudioBuffer<float> BasicSteppedDelayProcessor::writeMainBuffer(juce::Audio
 				}
 				*_tempBuffer.getWritePointer(channel, i) += spl;
 			}
+			if (isCrossfading) crossfadeSpl++;
+			isCrossfading = checkCrossfadeState();
 		}
 		return _tempBuffer;
 }
